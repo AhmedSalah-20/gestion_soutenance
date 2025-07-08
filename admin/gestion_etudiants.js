@@ -62,14 +62,20 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Validation functions
+    const validateNCE = (nce) => {
+        return /^\d{8}$/.test(nce);
+    };
+
+    const validateLogin = (login) => {
+        return /^[a-zA-Z0-9]{4,20}$/.test(login);
+    };
+
     const validateName = (name) => {
-        const nameRegex = /^[a-zA-Z\s-]{2,50}$/;
-        return nameRegex.test(name);
+        return /^[a-zA-Z\s-]{2,50}$/.test(name);
     };
 
     const validatePassword = (password) => {
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-        return passwordRegex.test(password);
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/.test(password);
     };
 
     const validatePhoto = (file) => {
@@ -141,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const originalNCE = document.getElementById('etudiantNCE').value;
         isValid &= validateInput(
             nceInput, 
-            (value) => /^\d{8}$/.test(value),
+            validateNCE,
             'Le NCE doit contenir exactement 8 chiffres',
             'nce',
             originalNCE
@@ -151,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const originalLogin = loginInput.dataset.original || '';
         isValid &= validateInput(
             loginInput, 
-            (value) => /^[a-zA-Z0-9]{4,20}$/.test(value),
+            validateLogin,
             'Le login doit contenir 4 à 20 caractères alphanumériques',
             'login',
             originalLogin
@@ -201,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (input === nceInput) {
                 validateInput(
                     nceInput, 
-                    (value) => /^\d{8}$/.test(value),
+                    validateNCE,
                     'Le NCE doit contenir exactement 8 chiffres',
                     'nce',
                     document.getElementById('etudiantNCE').value
@@ -209,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (input === loginInput) {
                 validateInput(
                     loginInput, 
-                    (value) => /^[a-zA-Z0-9]{4,20}$/.test(value),
+                    validateLogin,
                     'Le login doit contenir 4 à 20 caractères alphanumériques',
                     'login',
                     loginInput.dataset.original || ''
