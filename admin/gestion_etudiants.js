@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Client-side duplicate check using DataTable data
     const checkDuplicate = (field, value, originalValue = '') => {
-        if (value === originalValue) return true;
+        if (value === originalValue) return true; // Skip check if value hasn't changed
         let columnIndex;
         if (field === 'nce') {
             columnIndex = 1; // NCE is in the second column
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     };
 
-    // Form validation on submit
+    // Form validation on submit (for both adding and modifying)
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         let isValid = true;
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Real-time input validation
+    // Real-time input validation (for both adding and modifying)
     [nceInput, loginInput, nomInput, prenomInput, passwordInput].forEach(input => {
         input.addEventListener('input', () => {
             if (input === nceInput) {
