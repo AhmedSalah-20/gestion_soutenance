@@ -75,6 +75,10 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const validatePassword = (password) => {
+        // Allow empty password in edit mode (no change)
+        if (password === '' && document.getElementById('nce').readOnly) {
+            return true;
+        }
         return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/.test(password);
     };
 
@@ -87,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Client-side duplicate check using DataTable data
     const checkDuplicate = (field, value, originalValue = '') => {
-        if (value === originalValue) return true; // Skip check if value hasn't changed
+        if (value === originalValue) return true;
         let columnIndex;
         if (field === 'nce') {
             columnIndex = 1; // NCE is in the second column
@@ -111,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Real-time validation
     const validateInput = (input, validateFn, errorMessage, checkDuplicateField = null, originalValue = '') => {
         const feedback = createFeedbackElement(input.id);
-        if (!input.value) {
+        if (!input.value && input.required && !(input === passwordInput && document.getElementById('nce').readOnly)) {
             input.classList.add('is-invalid');
             feedback.textContent = 'Ce champ est requis';
             return false;
@@ -138,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     };
 
-    // Form validation on submit (for both adding and modifying)
+    // Form validation on submit
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         let isValid = true;
@@ -197,11 +201,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (isValid) {
+            console.log('Form validation passed, submitting...');
             form.submit();
+        } else {
+            console.log('Form validation failed');
         }
     });
 
-    // Real-time input validation (for both adding and modifying)
+    // Real-time input validation
     [nceInput, loginInput, nomInput, prenomInput, passwordInput].forEach(input => {
         input.addEventListener('input', () => {
             if (input === nceInput) {
@@ -265,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('nom').value = this.dataset.nom;
             document.getElementById('prenom').value = this.dataset.prenom;
             document.getElementById('login').value = this.dataset.login;
-            document.getElementById('mot_de_passe').value = this.dataset.password;
+            document.getElementById('mot_de_passe').value = ''; // Empty password field in edit mode
             document.getElementById('nce').readOnly = true;
             loginInput.dataset.original = this.dataset.login;
             etudiantModal.show();
