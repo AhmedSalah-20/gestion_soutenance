@@ -154,7 +154,7 @@
     <div class="modal fade" id="etudiantModal" tabindex="-1" aria-labelledby="etudiantModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form method="POST" action="gestion_etudiants.php" enctype="multipart/form-data">
+                <form method="POST" action="gestion_etudiants.php" enctype="multipart/form-data" id="etudiantForm">
                     <div class="modal-header">
                         <h5 class="modal-title" id="etudiantModalLabel">Ajouter un étudiant</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -164,28 +164,34 @@
                         <div class="mb-3">
                             <label for="photo_profil" class="form-label">Photo de profil</label>
                             <input type="file" class="form-control" id="photo_profil" name="photo_profil" accept="image/*">
+                            <div id="photo_profilFeedback" class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="nce" class="form-label">NCE</label>
                             <input type="text" class="form-control" id="nce" name="nce" required>
+                            <div id="nceFeedback" class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="nom" class="form-label">Nom</label>
                             <input type="text" class="form-control" id="nom" name="nom" required>
+                            <div id="nomFeedback" class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="prenom" class="form-label">Prénom</label>
                             <input type="text" class="form-control" id="prenom" name="prenom" required>
+                            <div id="prenomFeedback" class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="login" class="form-label">Login</label>
                             <input type="text" class="form-control" id="login" name="login" required>
+                            <div id="loginFeedback" class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="mot_de_passe" class="form-label">Mot de passe</label>
                             <div class="position-relative">
                                 <input type="password" class="form-control" id="mot_de_passe" name="mot_de_passe" required>
                                 <i class="bi bi-eye-slash password-toggle" id="togglePassword"></i>
+                                <div id="mot_de_passeFeedback" class="invalid-feedback"></div>
                             </div>
                         </div>
                     </div>
