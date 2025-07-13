@@ -160,7 +160,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" name="nce" id="etudiantNCE">
+                        <input type="hidden" name="etudiantNCE" id="etudiantNCE">
                         <div class="mb-3">
                             <label for="photo_profil" class="form-label">Photo de profil</label>
                             <input type="file" class="form-control" id="photo_profil" name="photo_profil" accept="image/*">

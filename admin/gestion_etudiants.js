@@ -58,10 +58,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const validateNCE = (nce) => /^\d{8}$/.test(nce);
     const validateLogin = (login) => /^[a-zA-Z0-9]{4,20}$/.test(login);
-    const validateName = (name) => /^[a-zA-Z\s-]{2,50}$/.test(name);
+    const validateName = (name) => /^[a-zA-Z\s-]{2,50}$/.test(name) && !/\s{2,}/.test(name) && !/^-|-$/.test(name);
     const validatePassword = (password) => {
         if (password === '' && document.getElementById('nce').readOnly) return true;
-        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/.test(password);
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
     };
     const validatePhoto = (file) => {
         if (!file) return true;
@@ -70,23 +70,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return allowedTypes.includes(file.type) && file.size <= maxSize;
     };
 
-    const checkDuplicate = (field, value, originalValue = '') => {
+    const checkDuplicate = async (field, value, originalValue = '') => {
         if (value === originalValue) return true;
-        let columnIndex = field === 'nce' ? 1 : (field === 'login' ? 4 : -1);
-        if (columnIndex === -1) return true;
-
-        let isUnique = true;
-        table.rows().every(function() {
-            const data = this.data();
-            if (data[columnIndex] === value) {
-                isUnique = false;
-                return false;
-            }
-        });
-        return isUnique;
+        try {
+            const response = await fetch(`gestion_etudiants.php?check_duplicate=${field}&value=${encodeURIComponent(value)}`);
+            const data = await response.json();
+            return !data.exists;
+        } catch (error) {
+            console.error('Error checking duplicate:', error);
+            return false;
+        }
     };
 
-    const validateInput = (input, validateFn, errorMessage, checkDuplicateField = null, originalValue = '') => {
+    const validateInput = async (input, validateFn, errorMessage, checkDuplicateField = null, originalValue = '') => {
         const feedback = createFeedbackElement(input.id);
         if (!input.value && input.required && !(input === passwordInput && document.getElementById('nce').readOnly)) {
             input.classList.add('is-invalid');
@@ -99,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         if (checkDuplicateField) {
-            const isUnique = checkDuplicate(checkDuplicateField, input.value, originalValue);
+            const isUnique = await checkDuplicate(checkDuplicateField, input.value, originalValue);
             if (!isUnique) {
                 input.classList.add('is-invalid');
                 feedback.textContent = `Ce ${checkDuplicateField} existe déjà`;
@@ -112,15 +108,15 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     };
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
         let isValid = true;
 
-        isValid &= validateInput(nceInput, validateNCE, 'Le NCE doit contenir exactement 8 chiffres', 'nce', document.getElementById('etudiantNCE').value);
-        isValid &= validateInput(loginInput, validateLogin, 'Le login doit contenir 4 à 20 caractères alphanumériques', 'login', loginInput.dataset.original || '');
-        isValid &= validateInput(nomInput, validateName, 'Le nom doit contenir uniquement des lettres, espaces ou tirets (2-50 caractères)');
-        isValid &= validateInput(prenomInput, validateName, 'Le prénom doit contenir uniquement des lettres, espaces ou tirets (2-50 caractères)');
-        isValid &= validateInput(passwordInput, validatePassword, 'Le mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule et un chiffre');
+        isValid &= await validateInput(nceInput, validateNCE, 'Le NCE doit contenir exactement 8 chiffres', 'nce', document.getElementById('etudiantNCE').value);
+        isValid &= await validateInput(loginInput, validateLogin, 'Le login doit contenir 4 à 20 caractères alphanumériques', 'login', loginInput.dataset.original || '');
+        isValid &= validateInput(nomInput, validateName, 'Le nom doit contenir uniquement des lettres, espaces ou tirets (2-50 caractères), sans espaces multiples ou tirets en début/fin');
+        isValid &= validateInput(prenomInput, validateName, 'Le prénom doit contenir uniquement des lettres, espaces ou tirets (2-50 caractères), sans espaces multiples ou tirets en début/fin');
+        isValid &= validateInput(passwordInput, validatePassword, 'Le mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule, un chiffre et un caractère spécial');
 
         const photoFeedback = createFeedbackElement('photo_profil');
         if (photoInput.files[0] && !validatePhoto(photoInput.files[0])) {
@@ -156,17 +152,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert(data.message);
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Une erreur est survenue lors de l\'envoi du formulaire.');
+            });
         }
     });
 
     [nceInput, loginInput, nomInput, prenomInput, passwordInput].forEach(input => {
-        input.addEventListener('input', () => {
-            if (input === nceInput) validateInput(nceInput, validateNCE, 'Le NCE doit contenir exactement 8 chiffres', 'nce', document.getElementById('etudiantNCE').value);
-            else if (input === loginInput) validateInput(loginInput, validateLogin, 'Le login doit contenir 4 à 20 caractères alphanumériques', 'login', loginInput.dataset.original || '');
-            else if (input === nomInput) validateInput(nomInput, validateName, 'Le nom doit contenir uniquement des lettres, espaces ou tirets (2-50 caractères)');
-            else if (input === prenomInput) validateInput(prenomInput, validateName, 'Le prénom doit contenir uniquement des lettres, espaces ou tirets (2-50 caractères)');
-            else if (input === passwordInput) validateInput(passwordInput, validatePassword, 'Le mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule et un chiffre');
+        input.addEventListener('input', async () => {
+            if (input === nceInput) await validateInput(nceInput, validateNCE, 'Le NCE doit contenir exactement 8 chiffres', 'nce', document.getElementById('etudiantNCE').value);
+            else if (input === loginInput) await validateInput(loginInput, validateLogin, 'Le login doit contenir 4 à 20 caractères alphanumériques', 'login', loginInput.dataset.original || '');
+            else if (input === nomInput) validateInput(nomInput, validateName, 'Le nom doit contenir uniquement des lettres, espaces ou tirets (2-50 caractères), sans espaces multiples ou tirets en début/fin');
+            else if (input === prenomInput) validateInput(prenomInput, validateName, 'Le prénom doit contenir uniquement des lettres, espaces ou tirets (2-50 caractères), sans espaces multiples ou tirets en début/fin');
+            else if (input === passwordInput) validateInput(passwordInput, validatePassword, 'Le mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule, un chiffre et un caractère spécial');
         });
     });
 
